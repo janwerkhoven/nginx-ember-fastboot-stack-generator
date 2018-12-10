@@ -1,0 +1,12 @@
+[Unit]
+Description=This service starts and stops the Ember Fastboot app server for interflux.io.
+
+[Service]
+WorkingDirectory=/var/www/interflux.io
+ExecStart=/home/deploy/.nvm/versions/node/v8.12.0/bin/node fastboot/server.js
+Type=simple
+User=deploy
+Group=deploy
+
+[Install]
+WantedBy=multi-user.target

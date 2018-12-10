@@ -1,0 +1,74 @@
+#!/bin/bash
+
+set -e
+set -o pipefail
+
+echo "----------"
+echo "GIT POST RECEIVE HOOK"
+echo "User: $USER"
+echo "Host: $HOSTNAME"
+echo "Path: $PWD"
+
+while read oldrev newrev refname
+do
+
+    echo "oldrev: $oldrev"
+    echo "newrev: $newrev"
+    echo "refname: $refname"
+
+    branch=$(git rev-parse --symbolic --abbrev-ref $refname)
+    echo "Branch: $branch"
+
+    if ! [ "$branch" == "production" ] ; then
+      echo "This is not a deployable branch."
+      echo "Ending deployment."
+      exit 1;
+    fi
+
+    revision=$(git rev-parse $branch)
+    rev=$(expr substr "${revision}" 1 7)
+
+    echo "revision: $revision"
+    echo "rev: $rev"
+
+    cd ../
+    echo "Path: $PWD"
+
+    base=$PWD
+    gitdir="$base/repo/"
+    worktree="$base/releases/$rev/"
+
+    echo "base: $base"
+    echo "gitdir: $gitdir"
+    echo "worktree: $worktree"
+
+    echo "mkdir $worktree"
+    mkdir $worktree
+
+    echo "cd $worktree"
+    cd $worktree
+
+    echo "git --work-tree=$worktree --git-dir=$gitdir checkout $branch -f"
+    git --work-tree=$worktree --git-dir=$gitdir checkout $branch -f
+
+    echo "GIT_REVISION=$rev" >> .env
+
+    # echo "nvm install"
+    # nvm install
+
+    echo "yarn install"
+    yarn install
+
+    echo "ember build -prod"
+    ember build -prod
+
+    echo "rm -rf $base/current/*"
+    rm -rf $base/current/*
+
+    echo "cp -r $base/releases/$rev/dist/* $base/current/"
+    cp -r $base/releases/$rev/dist/* $base/current/
+
+    echo "ls $base/current/"
+    ls $base/current/
+done
+echo "----------"
