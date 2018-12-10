@@ -1,10 +1,6 @@
 #!/bin/bash
 
-# How to use with Bash:
-# bash generate.sh admin.interflux.io 8002 v8.12.0
-
-# How to use with Fish:
-# eval "bash generate.sh admin.interflux.io 8002 v8.12.0"
+set -e
 
 echo '-----'
 echo 'Setting variables...'
@@ -42,8 +38,8 @@ cp $templates/git-post-receive-hook ./hooks/
 echo 'Setting up Fastboot...'
 cd $root/fastboot
 echo "$nvm" >> .nvmrc
-cp $templates/package.json .
-cp $templates/server.js .
+cp $templates/package.json $root/fastboot/
+cp $templates/server.js $root/fastboot/
 yarn install
 
 echo 'Generating Nginx server block...'
