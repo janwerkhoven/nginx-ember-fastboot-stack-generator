@@ -15,11 +15,9 @@ cd ~/nginx-ember-fastboot-stack-generator
 eval "bash generate.sh foo.bar.com 8000 v8.12.0"
 ```
 
-Warning: This install is quite opinionated and expects you to have a specific setup:
+Warning: This generator is quite opinionated and expects you to have a specific setup:
 
-This install assumes:
-
-1.  You are using a remote Ubuntu server.
+1.  You have a remote Unix based server (Ubuntu, Debian, Fedora, ...).
 2.  You are SSH-ed into your server.
 3.  Your user has `sudo` privileges.
 4.  You have a second user named `deploy` who does not have `sudo` privileges.
