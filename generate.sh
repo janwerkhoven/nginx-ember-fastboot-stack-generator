@@ -2,62 +2,106 @@
 
 set -e
 
-echo '-----'
-echo 'Setting variables...'
+echo "-----"
+echo ""
+echo "Setting variables..."
 
 domain=$1
-echo "\$domain = $domain"
-
 port=$2
-echo "\$port = $port"
-
-# TODO nvm=`nvm current`
 nvm=$3
-echo "\$nvm = $nvm"
-
 pwd=`pwd`
-echo "\$pwd = $pwd"
-
 templates="$pwd/templates"
-echo "\$templates = $templates"
-
 root="/var/www/$domain"
-echo "\$root = $root"
 
-echo 'Setting up project directories...'
+cat <<EOF
+  ├─ \$domain = $domain
+  ├─ \$port = $port
+  ├─ \$nvm = $nvm
+  ├─ \$pwd = $pwd
+  ├─ \$templates = $templates
+  └─ \$root = $root
+
+Setting up project directories...
+  ├─ mkdir -p $root/current
+  ├─ mkdir -p $root/releases
+  ├─ mkdir -p $root/fastboot
+  └─ mkdir -p $root/repo
+EOF
+
 mkdir -p $root/current
 mkdir -p $root/releases
 mkdir -p $root/fastboot
 mkdir -p $root/repo
 
-echo 'Setting up Git hooks...'
+cat <<EOF
+
+Setting up Git hooks...
+  ├─ cd $root/repo
+  ├─ git init --bare
+  └─ cp $templates/git-post-receive-hook ./hooks/
+
+EOF
+
 cd $root/repo
 git init --bare
 cp $templates/git-post-receive-hook ./hooks/
 
-echo 'Setting up Fastboot...'
+cat <<EOF
+
+Setting up Fastboot...
+  ├─ cd $root/fastboot
+  ├─ echo "$nvm" >> .nvmrc
+  ├─ cp $templates/package.json $root/fastboot/
+  ├─ cp $templates/server.js $root/fastboot/
+  └─ yarn install
+
+EOF
+
 cd $root/fastboot
 echo "$nvm" >> .nvmrc
 cp $templates/package.json $root/fastboot/
 cp $templates/server.js $root/fastboot/
 yarn install
 
-echo 'Generating Nginx server block...'
+cat <<EOF
+
+Setting up Nginx server block...
+  ├─ sed -e "s/interflux.io/$domain/g" -e "s/8001/$port/g" $templates/nginx-server-block > /etc/nginx/sites-available/$domain
+  └─ ln -svf /etc/nginx/sites-available/$domain /etc/nginx/sites-enabled/
+
+EOF
+
 sed -e "s/interflux.io/$domain/g" -e "s/8001/$port/g" $templates/nginx-server-block > /etc/nginx/sites-available/$domain
+ln -svf /etc/nginx/sites-available/$domain /etc/nginx/sites-enabled/
 
-echo 'Enabling Nginx server block...'
-ln -s /etc/nginx/sites-available/$domain /etc/nginx/sites-enabled/
+cat <<EOF
 
-echo 'Generating systemd service...'
-sed -e "s/interflux.io/$domain/g" -e "s/v8.12.0/$nvm/g" $templates/systemd-fastboot-service > /etc/systemd/system/$domain.fastboot.service
+Generating systemd service...
+  ├─ sed -e "s/interflux.io/$domain/g" -e "s/v8.12.0/$nvm/g" $templates/systemd-fastboot-service > $root/fastboot/$domain.fastboot.service
+  └─ ln -svf $root/fastboot/$domain.fastboot.service /etc/systemd/system/
 
-echo 'Done generating!'
-echo ' '
-echo 'To complete the setup:'
-echo `1. Push production up from your local or CI (git push server production).`
-echo `2. Make sure git hook triggered and completed.`
-echo `3. sudo nginx -t`
-echo `4. sudo systemctl restart nginx`
-echo `5. sudo systemctl restart $domain.fastboot.service`
-echo `6. Open https://$domain in a browser`
-echo '-----'
+EOF
+
+sudo sed -e "s/interflux.io/$domain/g" -e "s/v8.12.0/$nvm/g" $templates/systemd-fastboot-service > $root/fastboot/$domain.fastboot.service
+sudo ln -svf $root/fastboot/$domain.fastboot.service /etc/systemd/system/
+
+cat <<EOF
+
+Done generating!
+
+-----
+
+To complete the setup:
+1. Push production up from your local or CI (git push server production).
+2. Make sure git hook triggered and completed.
+3. sudo nginx -t
+4. sudo systemctl restart nginx
+5. Start the fastboot service
+sudo ln -svf $root/fastboot/$domain.fastboot.service /etc/systemd/system/
+sudo systemctl restart $domain.fastboot.service
+sudo systemctl enable $domain.fastboot.service
+sudo systemctl daemon-reload
+6. Open https://$domain in a browser
+
+-----
+EOF
