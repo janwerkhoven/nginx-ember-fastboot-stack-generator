@@ -85,7 +85,9 @@ cat <<EOF
 
 Setting up temporary Nginx server block...
   ├─ sed "s/foo.com/$domain/g" $templates/nginx-server-block-before-ssl > /etc/nginx/sites-available/$domain
-  └─ ln -svf /etc/nginx/sites-available/$domain /etc/nginx/sites-enabled/
+  ├─ ln -svf /etc/nginx/sites-available/$domain /etc/nginx/sites-enabled/
+  ├─ sudo cp $templates/best_practices.conf /etc/nginx/snippets
+  └─ sudo cp $templates/security_headers.conf /etc/nginx/snippets
 
 EOF
 
