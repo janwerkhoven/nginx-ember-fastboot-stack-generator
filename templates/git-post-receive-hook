@@ -35,21 +35,26 @@ do
     echo "Path: $PWD"
 
     base=$PWD
-    gitdir="$base/repo/"
-    worktree="$base/releases/$rev/"
+    repo="$base/repo"
+    temp="$base/releases/temp"
+    release="$base/releases/$rev"
 
     echo "base: $base"
-    echo "gitdir: $gitdir"
-    echo "worktree: $worktree"
+    echo "repo: $repo"
+    echo "temp: $temp"
+    echo "release: $release"
 
-    echo "mkdir $worktree"
-    mkdir $worktree
+    echo "rm -rf $temp"
+    rm -rf $temp
 
-    echo "cd $worktree"
-    cd $worktree
+    echo "mkdir $temp"
+    mkdir $temp
 
-    echo "git --work-tree=$worktree --git-dir=$gitdir checkout $branch -f"
-    git --work-tree=$worktree --git-dir=$gitdir checkout $branch -f
+    echo "git --work-tree=$temp/ --git-dir=$repo/ checkout $branch -f"
+    git --work-tree=$temp/ --git-dir=$repo/ checkout $branch -f
+
+    echo "cd $temp"
+    cd $temp
 
     echo "GIT_REVISION=$rev" >> .env
 
@@ -62,13 +67,19 @@ do
     echo "ember build -prod"
     ember build -prod
 
+    echo "mkdir $release"
+    mkdir $release
+
+    echo "cp -r $temp/dist/* $release"
+    cp -r $temp/dist/* $release
+
     echo "rm -rf $base/current/*"
     rm -rf $base/current/*
 
-    echo "cp -r $base/releases/$rev/dist/* $base/current/"
-    cp -r $base/releases/$rev/dist/* $base/current/
+    echo "cp -r $release/* $base/current/"
+    cp -r $release/* $base/current/
 
-    echo "ls $base/current/"
-    ls $base/current/
+    echo "rm -rf $temp"
+    rm -rf $temp
 done
 echo "----------"
