@@ -1,8 +1,24 @@
-{
-  "devDependencies": {
-    "abortcontroller-polyfill": "^1.2.1",
-    "fastboot-app-server": "^1.1.2-beta.1",
-    "fastboot-watch-notifier": "^3.0.0",
-    "node-fetch": "^2.3.0"
+/*eslint-env node*/
+
+const FastBootAppServer = require("fastboot-app-server");
+const FastBootWatchNotifier = require("fastboot-watch-notifier");
+
+const distPath = "/var/www/foo.com/current";
+
+const notifier = new FastBootWatchNotifier({
+  distPath,
+  debounceDelay: 250,
+  saneOptions: {
+    poll: true
   }
-}
+});
+
+const server = new FastBootAppServer({
+  distPath,
+  notifier,
+  gzip: true,
+  host: "0.0.0.0",
+  port: 8001
+});
+
+server.start();

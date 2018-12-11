@@ -1,8 +1,8 @@
 [Unit]
-Description=This service starts and stops the Ember Fastboot app server for interflux.io.
+Description=This service starts and stops the Ember Fastboot app server for foo.com.
 
 [Service]
-WorkingDirectory=/var/www/interflux.io
+WorkingDirectory=/var/www/foo.com
 ExecStart=/home/deploy/.nvm/versions/node/v8.12.0/bin/node fastboot/server.js
 Type=simple
 User=deploy

@@ -81,5 +81,7 @@ do
 
     echo "rm -rf $temp"
     rm -rf $temp
+
+    echo "Successfully deployed!"
 done
 echo "----------"
